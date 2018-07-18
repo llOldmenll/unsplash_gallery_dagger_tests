@@ -9,6 +9,8 @@ import com.oldmen.unsplash_gallery_dagger_tests.presentation.mvp.base.BasePresen
 import com.oldmen.unsplash_gallery_dagger_tests.utils.CustomApplication;
 
 
+import java.lang.ref.WeakReference;
+
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
@@ -49,9 +51,9 @@ public class GridPresenter extends BasePresenter {
                 .subscribe();
     }
 
-    public void startPager(int position, ImageView imgView) {
+    public void startPager(int position, WeakReference<ImageView> imageViewWR) {
         saveCurrentPosition(position);
-        mView.startPager(position, imgView);
+        mView.startPager(position, imageViewWR.get());
     }
 
 }

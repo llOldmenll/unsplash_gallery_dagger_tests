@@ -28,6 +28,7 @@ import com.oldmen.unsplash_gallery_dagger_tests.presentation.ui.base.BaseFragmen
 import com.oldmen.unsplash_gallery_dagger_tests.presentation.ui.main_screen.pager.PagerFragment;
 import com.oldmen.unsplash_gallery_dagger_tests.utils.GridItemDecoration;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -91,7 +92,8 @@ public class GridFragment extends BaseFragment implements GridView {
 
     private void initRecycler() {
         mRecycler.setLayoutManager(getGridLayoutManager());
-        mAdapter = new GridAdapter(this, mPresenter, mImagesInfo);
+        mAdapter = new GridAdapter(this, mImagesInfo);
+        mAdapter.setGridListener((position, imageViewWR) -> mPresenter.startPager(position, imageViewWR));
         mRecycler.addItemDecoration(new GridItemDecoration(
                 getResources().getDimensionPixelSize(R.dimen.grid_item_divider_size)));
         mRecycler.setAdapter(mAdapter);
@@ -164,7 +166,6 @@ public class GridFragment extends BaseFragment implements GridView {
     }
 
     private void scrollToPosition() {
-//        mRecycler.scrollToPosition(mPresenter.getCurrentPosition());
         mRecycler.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
             @Override
             public void onLayoutChange(View v,
@@ -184,7 +185,6 @@ public class GridFragment extends BaseFragment implements GridView {
                 if (viewAtPosition == null || layoutManager
                         .isViewPartiallyVisible(viewAtPosition, true, true)) {
                     layoutManager.scrollToPosition(position);
-//                    mRecycler.post(() -> layoutManager.scrollToPosition(position));
                 }
             }
         });
@@ -208,7 +208,7 @@ public class GridFragment extends BaseFragment implements GridView {
 
     @Override
     public void updateRecycler(List<ImageUnsplash> images) {
-        mAdapter.update(images);
+        mAdapter.update(mPresenter.getCurrentPage(), images);
         mIsDownloading = false;
     }
 

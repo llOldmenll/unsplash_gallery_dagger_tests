@@ -22,6 +22,7 @@ import com.oldmen.unsplash_gallery_dagger_tests.domain.ImageUnsplash;
 import com.oldmen.unsplash_gallery_dagger_tests.presentation.mvp.main_screen.grid.GridPresenter;
 import com.oldmen.unsplash_gallery_dagger_tests.utils.GlideApp;
 
+import java.lang.ref.WeakReference;
 import java.util.List;
 
 import butterknife.BindView;
@@ -29,12 +30,11 @@ import butterknife.ButterKnife;
 
 public class GridAdapter extends RecyclerView.Adapter<GridAdapter.GridHolder> {
     private Fragment mFragment;
-    private GridPresenter mPresenter;
     private List<ImageUnsplash> mImages;
+    private GridListener mListener;
 
-    GridAdapter(Fragment fragment, GridPresenter presenter, List<ImageUnsplash> imagesInfo) {
+    GridAdapter(Fragment fragment, List<ImageUnsplash> imagesInfo) {
         mFragment = fragment;
-        mPresenter = presenter;
         mImages = imagesInfo;
     }
 
@@ -45,7 +45,7 @@ public class GridAdapter extends RecyclerView.Adapter<GridAdapter.GridHolder> {
                 .inflate(R.layout.image_grid_item, parent, false);
         GridHolder holder = new GridHolder(view);
         holder.itemView.setOnClickListener(v ->
-                mPresenter.startPager(holder.getAdapterPosition(), holder.mImageView));
+                mListener.imageClicked(holder.getAdapterPosition(), new WeakReference<>(holder.mImageView)));
         return holder;
     }
 
@@ -59,8 +59,11 @@ public class GridAdapter extends RecyclerView.Adapter<GridAdapter.GridHolder> {
         return mImages.size();
     }
 
-    void update(List<ImageUnsplash> images) {
-        int currentPage = mPresenter.getCurrentPage();
+    public void setGridListener(GridListener listener) {
+        mListener = listener;
+    }
+
+    void update(int currentPage, List<ImageUnsplash> images) {
         List<ImageUnsplash> imagesList;
 
         if (currentPage <= 1) {
@@ -104,9 +107,6 @@ public class GridAdapter extends RecyclerView.Adapter<GridAdapter.GridHolder> {
                             public boolean onResourceReady(Drawable resource, Object model, Target<Drawable>
                                     target, DataSource dataSource, boolean isFirstResource) {
                                 mFragment.startPostponedEnterTransition();
-//                                GlideApp.with(mFragment.getContext())
-//                                        .load(imgInfo.getRegularImgUrl())
-//                                        .preload();
                                 return false;
                             }
                         })
@@ -117,5 +117,9 @@ public class GridAdapter extends RecyclerView.Adapter<GridAdapter.GridHolder> {
 
             ViewCompat.setTransitionName(mImageView, imgInfo.getSmallImgUrl());
         }
+    }
+
+    public interface GridListener {
+        void imageClicked(int position, WeakReference<ImageView> imageViewWR);
     }
 }
